@@ -2,7 +2,7 @@ module git.iamthefij.com/iamthefij/yk-cli
 
 go 1.15
 
-replace github.com/yawn/ykoath => ../ykoath
+replace github.com/yawn/ykoath => ./ykoath
 
 require (
 	git.iamthefij.com/iamthefij/slog v1.2.0

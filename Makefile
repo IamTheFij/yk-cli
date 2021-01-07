@@ -1,6 +1,6 @@
 VERSION ?= $(shell git describe --tags --dirty)
 NAME := yk
-GOFILES = *.go
+GOFILES = *.go go.mod go.sum
 # Multi-arch targets are generated from this
 TARGET_ALIAS = $(NAME)-linux-amd64 $(NAME)-linux-arm $(NAME)-linux-arm64 $(NAME)-darwin-amd64
 TARGETS = $(addprefix dist/,$(TARGET_ALIAS))
