@@ -8,8 +8,8 @@ import (
 	"syscall"
 
 	"git.iamthefij.com/iamthefij/slog"
-	keychain "github.com/keybase/go-keychain"
 	"github.com/yawn/ykoath"
+	"github.com/zalando/go-keyring"
 	"golang.org/x/term"
 )
 
@@ -42,22 +42,15 @@ func setPassword(s *ykoath.Select) error {
 		return errFailedValidation
 	}
 
-	item := keychain.NewGenericPassword(
+	return keyring.Set(
 		serviceName,
 		s.DeviceID(),
-		"",
-		key,
-		"",
+		string(key),
 	)
-	item.SetSynchronizable(keychain.SynchronizableNo)
-	item.SetAccessible(keychain.AccessibleWhenUnlocked)
-	err = keychain.AddItem(item)
-
-	return err
 }
 
-func getPassword(s *ykoath.Select) ([]byte, error) {
-	return keychain.GetGenericPassword(serviceName, s.DeviceID(), "", "")
+func getPassword(s *ykoath.Select) (string, error) {
+	return keyring.Get(serviceName, s.DeviceID())
 }
 
 func main() {
@@ -98,7 +91,7 @@ func main() {
 		passKey, err := getPassword(s)
 		slog.FatalOnErr(err, "failed retrieving password key")
 
-		ok, err := oath.Validate(s, passKey)
+		ok, err := oath.Validate(s, []byte(passKey))
 		slog.FatalOnErr(err, "validation failed")
 
 		if !ok {
