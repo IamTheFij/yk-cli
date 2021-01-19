@@ -15,3 +15,7 @@ Executing `make build` will compile to `./build/yk`. Additionally, distribution 
 ### Note on distribution builds
 
 Currently cross compiling is not working correctly.
+
+### Building for linux distros
+
+This is a work in progress, but it can be done by running `./build_linux.sh [golang|ubuntu]`.
