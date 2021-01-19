@@ -25,32 +25,43 @@ func setPassword(s *ykoath.Select) error {
 
 	bytePassword, err := term.ReadPassword(syscall.Stdin)
 	if err != nil {
-		slog.Error("failed reading password from input")
-
-		return err
+		return fmt.Errorf("failed reading password from input: %w", err)
 	}
 
-	// get password
-	key := s.DeriveKey(string(bytePassword))
+	password := string(bytePassword)
 
+	// get key
+	key := s.DeriveKey(password)
+
+	// verify password is correct with a validate call
 	ok, err := oath.Validate(s, key)
 	if err != nil {
-		return err
+		return fmt.Errorf("error in validate: %w", err)
 	}
 
 	if !ok {
 		return errFailedValidation
 	}
 
-	return keyring.Set(
+	err = keyring.Set(
 		serviceName,
 		s.DeviceID(),
-		string(key),
+		password,
 	)
+	if err != nil {
+		return fmt.Errorf("error saving password in keyring: %w", err)
+	}
+
+	return nil
 }
 
-func getPassword(s *ykoath.Select) (string, error) {
-	return keyring.Get(serviceName, s.DeviceID())
+func getPasskey(s *ykoath.Select) ([]byte, error) {
+	password, err := keyring.Get(serviceName, s.DeviceID())
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving key from keyring: %w", err)
+	}
+
+	return s.DeriveKey(password), nil
 }
 
 func main() {
@@ -88,15 +99,17 @@ func main() {
 
 	// If required, authenticate with password from keychain
 	if s.Challenge != nil {
-		passKey, err := getPassword(s)
+		passKey, err := getPasskey(s)
 		slog.FatalOnErr(err, "failed retrieving password key")
 
-		ok, err := oath.Validate(s, []byte(passKey))
+		ok, err := oath.Validate(s, passKey)
 		slog.FatalOnErr(err, "validation failed")
 
 		if !ok {
 			slog.Fatal("failed validation, password is incorrect")
 		}
+	} else {
+		slog.Debug("no challenge required")
 	}
 
 	if flag.Arg(0) == "list" {
