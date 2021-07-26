@@ -1,9 +1,8 @@
-# Disable file completions
-complete -c yk -f
-# Add completion for setting password
-complete -c yk -a set-password -d "Set authentication password"
-# Add completion of credentials
-complete -c yk -a "(yk list)" -d "Credential to get TOTP for"
+complete --command yk --no-files
+complete --command yk --arguments "(yk list)" --description "Credential to get TOTP for"
+complete --command yk --old-option "debug" --description "enable debug logging"
+complete --command yk --old-option "version" --description "print version and exit"
+complete --command yk --old-option "set-password" --description "prompt for key password and store in system keychain"
 
 function yk-copy --description "Select a credential using fzf and copy it to clipboard"
     set result (yk (yk list | fzf))

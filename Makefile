@@ -6,7 +6,7 @@ TARGET_ALIAS = $(NAME)-linux-amd64 $(NAME)-linux-arm $(NAME)-linux-arm64 $(NAME)
 TARGETS = $(addprefix dist/,$(TARGET_ALIAS))
 
 .PHONY: default
-default: yk
+default: build/yk
 
 .PHONY: all
 all: $(TARGETS)

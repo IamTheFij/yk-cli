@@ -64,9 +64,18 @@ func getPasskey(s *ykoath.Select) ([]byte, error) {
 	return s.DeriveKey(password), nil
 }
 
+func usage() {
+	fmt.Fprintf(flag.CommandLine.Output(), "Usage:\n  %s [target site]\n\n", os.Args[0])
+	fmt.Fprintf(flag.CommandLine.Output(), "Prints TOTP code for provided target site. If no site is provided, %s will list all sites.\n\n", os.Args[0])
+	fmt.Fprint(flag.CommandLine.Output(), "If a touch is required for your code, the command will not return until the your key is touched.\n\n")
+	flag.PrintDefaults()
+}
+
 func main() {
+	flag.Usage = usage
 	flag.BoolVar(&slog.DebugLevel, "debug", false, "enable debug logging")
 	showVersion := flag.Bool("version", false, "print version and exit")
+	shouldSetPassword := flag.Bool("set-password", false, "prompt for key password and store in system keychain")
 	flag.Parse()
 
 	if *showVersion {
@@ -90,7 +99,7 @@ func main() {
 	slog.FatalOnErr(err, "failed to select oath")
 
 	// Check to see if we are trying to set a password
-	if flag.Arg(0) == "set-password" {
+	if *shouldSetPassword {
 		err = setPassword(s)
 		slog.FatalOnErr(err, "failed to save password")
 
@@ -112,7 +121,7 @@ func main() {
 		slog.Debug("no challenge required")
 	}
 
-	if flag.Arg(0) == "list" {
+	if flag.NArg() == 0 || flag.Arg(0) == "list" {
 		// List names only
 		names, err := oath.List()
 		slog.FatalOnErr(err, "failed to list names")
