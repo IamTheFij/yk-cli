@@ -131,7 +131,10 @@ func main() {
 		}
 	} else {
 		name := flag.Arg(0)
-		code, err := oath.CalculateOne(name)
+		code, err := oath.Calculate(name, func(string) error {
+			fmt.Fprintf(os.Stderr, "Touch key to generate code for %s...", name)
+			return nil
+		})
 		slog.FatalOnErr(err, "failed to retrieve credential")
 
 		fmt.Println(code)
